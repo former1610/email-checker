@@ -74,12 +74,12 @@ args = parser.parse_args()
 #
 # Don't translate spaces, or it will break things when calling parameters
 decode = string.maketrans(
-    "@Hmrw7nMk3ag2vtGRfV8UJB6Y9.Qod*DbLjhsTOcepl:10yPzCAXiK4u%F$^NWZIq-x&#E5S",
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890@#$%^&*:.-"
+    'TFGQberD2Oz9yAi6UW7ox01mSvIgCKMnPupJRcNjVd3Hq85La4wEsXhYkltfZB',
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
 )
 encode = string.maketrans(
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890@#$%^&*:.-",
-    "@Hmrw7nMk3ag2vtGRfV8UJB6Y9.Qod*DbLjhsTOcepl:10yPzCAXiK4u%F$^NWZIq-x&#E5S"
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890',
+    'TFGQberD2Oz9yAi6UW7ox01mSvIgCKMnPupJRcNjVd3Hq85La4wEsXhYkltfZB'
 )
 
 # Set variable values from argument parser
@@ -735,7 +735,7 @@ def save_attachment(part, ext='.bin'):
 ################
 
 # Substitution codebook generator
-#keyspace = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890@#$%^&*:.-"
+#keyspace = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890'
 #str1 = keyspace
 #str2 = ""
 #for i in range(0, len(str1)):
@@ -753,3 +753,4 @@ try:
 except KeyboardInterrupt:
     # die gracefully on [ctrl+c]
     sys.exit()
+
