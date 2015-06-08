@@ -195,7 +195,7 @@ args = parser.parse_args()
 
 if args.cmd == 'check':
     checkerRunEvent = threading.Event()
-    checkerSleepEvent = threading.Event()
+    checkerWaitEvent = threading.Event()
     checkerThread = None
 
     if args.decode:
@@ -461,10 +461,12 @@ def check_mail():
 
 def checker_loop():
     # Wait for the main thread to signal that it's ok to proceed
-    checkerSleepEvent.wait()
+    checkerWaitEvent.wait()
     logging.debug("Checker thread running")
 
     while checkerRunEvent.is_set():
+        # Clear the event so we only iterate once
+        checkerWaitEvent.clear()
         check_mail()
         # Randomize how long we sleep for
         randSleep = random.randint(waitMin, waitMax)
@@ -472,7 +474,7 @@ def checker_loop():
         logging.info("Waiting " + str(randSleep) + " minute(s). Press " \
                      "[ENTER] to check now")
         # Sleep
-        checkerSleepEvent.wait(randSleep * 60)
+        checkerWaitEvent.wait(randSleep * 60)
 
 def clean_build(name):
     logging.debug("Cleaning build artifacts")
@@ -771,14 +773,14 @@ def main():
     random.seed()
 
     if args.cmd == 'check':
-        run_check(args)
+        run_check()
     elif args.cmd == 'install':
         try:
-            run_install(args)
+            run_install()
         except KeyboardInterrupt:
             return
     elif args.cmd == 'codebook':
-        run_codebook(args)
+        run_codebook()
     else:
         # Should never get here
         logging.error("Invalid email checker command: " + cmd)
@@ -904,7 +906,7 @@ def raw_input2(prompt=''):
         time.sleep(.05)
         raise
 
-def run_check(args):
+def run_check():
     # Display some information about how we're configured
     print
     logging.info("==================================================")
@@ -928,20 +930,18 @@ def run_check(args):
     # Create the checker thread
     global checkerThread
     checkerThread = threading.Thread(target = checker_loop)
+    checkerThread.setName("Email_Checker_Thread")
     # Set checker thread run event (signal to run)
     checkerRunEvent.set()
     # Start the thread
     checkerThread.start()
 
-    # Sleep for 3 seconds to ensure checker thread
-    # has time to create and start
-    time.sleep(3)
+    # Sleep 10ms to give the checker thread time to start
+    time.sleep(.01)
 
     while True:
         # Signal checker thread to proceed
-        checkerSleepEvent.set()
-        # Clear the event so we only iterate once
-        checkerSleepEvent.clear()
+        checkerWaitEvent.set()
         
         try:
             # Wait for the user to hit [ENTER]
@@ -957,20 +957,20 @@ def run_check(args):
         except KeyboardInterrupt:
             # The user hit [CTRL-C]
             # Break out of the loop so we can tear things down
-            stop_checker_thread()
+            stop_thread()
             break
         except:
             # Don't know what happened -- grab the exception and 
             # break out of the loop so we can tear things down
             exctype, value = sys.exc_info()[:2]
             logging.error("Unexpected error: " + exctype.__name__)
-            stop_checker_thread()
+            stop_thread()
             break
 
     logging.info("--------------------------------------------------")
     logging.info("Email checking terminated")
 
-def run_install(args):
+def run_install():
     print
     logging.info("==================================================")
     logging.info("Email-checker Installation")
@@ -1090,7 +1090,7 @@ def run_install(args):
     if not frozen:
         clean_build(installName)
 
-def run_codebook(args):
+def run_codebook():
     print
     print "=================================================="
     print "Email-checker Codebook Generator"
@@ -1167,14 +1167,19 @@ def save_attachment(part, ext='.bin'):
     # Return the filename of the saved file
     return fileAbsPath
 
-def stop_checker_thread():
+def stop_thread():
     if checkerThread and checkerThread.is_alive():
         # Clear thread run event (signal to quit)
         checkerRunEvent.clear()
         # Signal the checker thread proceed (in case it's waiting)
-        checkerSleepEvent.set()
+        checkerWaitEvent.set()
         # Join the thread (waiting for it to terminate)
-        checkerThread.join()
+        # Sometime PyInstaller bundle doesn't properly handle [CTRL-C]
+        # on Linux and terminates with a KeyboardInterrupt traceback here
+        try:
+            checkerThread.join()
+        except KeyboardInterrupt:
+            pass
 
 ################
 # Main Program #
