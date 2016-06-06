@@ -1055,9 +1055,10 @@ def run_install():
         exeFile = sys.executable
         exePath, exeName = os.path.split(exeFile)
 
+        if operatingSystem == 'Windows' and not installPath.endswith(".exe"):
+            installName += '.exe'
+            
         installExeAbsPath = os.path.join(installPath, installName)
-        if operatingSystem == 'Windows':
-            installExeAbsPath += '.exe'
 
         if os.path.exists(installExeAbsPath):
             # The PyInstaller bundle is located in the install directory
@@ -1067,11 +1068,15 @@ def run_install():
             # The PyInstaller bundle is not located in the install directory
             # Copy the PyInstaller bundle to the specified location
             try:
-                shutil.copy(exeFile, installPath)
-                logging.info("Copied " + exeFile + " to " + installPath)
+                shutil.copy(exeFile, installExeAbsPath)
+                logging.info(
+                        "Copied " + exeFile + " to " + installPath + " as " +
+                        installName
+                )
             except shutil.Error as err:
                 logging.error(
-                    "Error copying " + exeFile + " to " + installPath
+                    "Error copying " + exeFile + " to " + installPath + " as " +
+                    installName
                 )
                 logging.error(str(err))
                 clean_build(installName)
