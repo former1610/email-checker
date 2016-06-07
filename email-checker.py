@@ -1086,11 +1086,10 @@ def run_install():
     argString = generate_arg_string(arguments)
 
     print
-    installExe = os.path.join(installPath, exeName)
     if operatingSystem == 'Linux':
-        install_linux(installName, installExe, argString)
+        install_linux(installName, installExeAbsPath, argString)
     elif operatingSystem == 'Windows':
-        install_windows(installName, installExe, argString)
+        install_windows(installName, installExeAbsPath, argString)
 
     if not frozen:
         clean_build(installName)
