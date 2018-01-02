@@ -1032,6 +1032,8 @@ def run_install():
         if os.path.isdir(installPath):
             break
 
+    installExeAbsPath = os.path.join(installPath, installName)
+
     print
     if not frozen:
         # Build the executable
